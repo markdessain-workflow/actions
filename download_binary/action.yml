@@ -1,16 +1,22 @@
 # action.yml
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'download_binary'
+description: ''
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  name:
+    description: ''
     required: true
     default: 'World'
+  path:
+    description: ''
+    required: false
+    default: './bin'
 outputs:
-  time: # id of output
-    description: 'The time we greeted you'
+  binary:
+    description: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.who-to-greet }}
+    - ${{ secrets.GITHUB_TOKEN }}
+    - ${{ inputs.name }}
+    - ${{ inputs.path }}
