@@ -5,7 +5,9 @@ inputs:
   name:
     description: ''
     required: true
-    default: 'World'
+  token:
+    description: ''
+    required: true
   path:
     description: ''
     required: false
@@ -17,6 +19,6 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ secrets.GITHUB_TOKEN }}
+    - ${{ inputs.token }}
     - ${{ inputs.name }}
     - ${{ inputs.path }}
