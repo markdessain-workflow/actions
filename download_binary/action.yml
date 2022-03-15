@@ -11,7 +11,7 @@ inputs:
   path:
     description: ''
     required: false
-    default: './bin'
+    default: './dist'
 outputs:
   binary:
     description: ''
