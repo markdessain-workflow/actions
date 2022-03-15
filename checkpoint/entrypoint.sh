@@ -6,6 +6,8 @@
 mkdir /repo
 cd /repo
 
+echo "https://$1@github.com/$GITHUB_REPOSITORY.git"
+
 git clone https://$1@github.com/$GITHUB_REPOSITORY.git
 git checkout run-metadata
 
