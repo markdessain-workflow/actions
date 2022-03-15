@@ -18,5 +18,8 @@ echo "$NEW_NUM" > $2.checkpoint
 
 END_DATE=$(date -r $2.checkpoint)
 
+echo $START_DATE
+echo $END_DATE
+
 echo "::set-output name=start_date::$START_DATE"
 echo "::set-output name=end_date::$END_DATE"
