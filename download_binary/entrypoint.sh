@@ -3,7 +3,7 @@
 printenv
 echo $1
 
-echo $ACTIONS_RUNTIME_TOKEN > .github_token
+echo INPUT_TOKEN > .github_token
 /bin/gh auth login --with-token < .github_token
 
 cd $GITHUB_WORKSPACE
