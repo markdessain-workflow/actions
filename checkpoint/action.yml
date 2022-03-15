@@ -13,5 +13,10 @@ outputs:
   end_time:
     description: ''
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.token }}
+    - ${{ inputs.name }}
+  entrypoint: '/entrypoint.sh'
+  post-entrypoint: '/post-entrypoint.sh'
