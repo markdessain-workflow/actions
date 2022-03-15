@@ -6,6 +6,8 @@ echo $1 > .github_token
 mkdir /repo
 cd /repo
 
+printenv
+
 gh repo clone $GITHUB_REPOSITORY_OWNER/$GITHUB_REPOSITORY
 git checkout run-metadata
 
