@@ -1,5 +1,8 @@
 #!/bin/sh -l
 
+printenv
+echo $1
+
 echo $ACTIONS_RUNTIME_TOKEN > .github_token
 /bin/gh auth login --with-token < .github_token
 
