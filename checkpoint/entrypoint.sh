@@ -1,12 +1,12 @@
 #!/bin/sh -l
 
-echo $1 > .github_token
-/bin/gh auth login --with-token < .github_token
+#echo $1 > .github_token
+#/bin/gh auth login --with-token < .github_token
 
 mkdir /repo
 cd /repo
 
-gh repo clone $GITHUB_REPOSITORY
+git clone https://$1@github.com/$GITHUB_REPOSITORY.git
 git checkout run-metadata
 
 FILE=/etc/resolv.conf
