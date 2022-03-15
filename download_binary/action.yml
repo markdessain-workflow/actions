@@ -5,10 +5,13 @@ inputs:
   name:
     description: ''
     required: true
+  token:
+    description: ''
+    required: true
   path:
     description: ''
     required: false
-    default: './dist'
+    default: './bin'
 outputs:
   binary:
     description: ''
@@ -16,5 +19,6 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - ${{ inputs.token }}
     - ${{ inputs.name }}
     - ${{ inputs.path }}
