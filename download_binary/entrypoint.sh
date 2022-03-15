@@ -1,6 +1,10 @@
 #!/bin/sh -l
 
-printenv
+printenv > abc.txt
+cat abc.txt
+
+echo "----"
+
 echo $1
 
 echo INPUT_TOKEN > .github_token
