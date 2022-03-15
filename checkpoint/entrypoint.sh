@@ -1,10 +1,14 @@
 #!/bin/sh -l
 
-#echo $1 > .github_token
+echo $1 > .github_token
 #/bin/gh auth login --with-token < .github_token
+
+cat .github_token
 
 mkdir /repo
 cd /repo
+
+
 
 echo "https://$1@github.com/$GITHUB_REPOSITORY.git"
 
