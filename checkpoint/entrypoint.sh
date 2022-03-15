@@ -9,8 +9,12 @@ fi
 
 START_DATE=$(date -r $2.checkpoint)
 
-NEW=$(expr $(cat $2.checkpoint) + 1)
-echo "$NEW\n" > $2.checkpoint
+OLD_NUM=$(cat $2.checkpoint)
+
+echo $OLD_NUM
+
+NEW_NUM=$(expr $OLD_NUM + 1)
+echo "$NEW_NUM\n" > $2.checkpoint
 
 END_DATE=$(date -r $2.checkpoint)
 
