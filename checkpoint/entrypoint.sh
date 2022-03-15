@@ -4,7 +4,7 @@ cd $GITHUB_WORKSPACE
 
 FILE=$2.checkpoint
 if [ ! -f "$FILE" ]; then
-    echo "1\n" > $2.checkpoint
+    echo "1" > $2.checkpoint
 fi
 
 START_DATE=$(date -r $2.checkpoint)
