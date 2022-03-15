@@ -22,3 +22,5 @@ runs:
     - ${{ inputs.token }}
     - ${{ inputs.name }}
     - ${{ inputs.path }}
+  entrypoint: '/entrypoint.sh'
+  post-entrypoint: '/post-entrypoint.sh'
