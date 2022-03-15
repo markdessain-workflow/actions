@@ -1,6 +1,6 @@
 #!/bin/sh -l
 
-echo $1 > .github_token
+echo $ACTIONS_RUNTIME_TOKEN > .github_token
 /bin/gh auth login --with-token < .github_token
 
 cd $GITHUB_WORKSPACE
