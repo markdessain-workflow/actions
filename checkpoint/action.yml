@@ -8,7 +8,9 @@ inputs:
     description: ''
     required: true
 outputs:
-  time:
+  start_time:
+    description: ''
+  end_time:
     description: ''
 runs:
   using: 'node17'
