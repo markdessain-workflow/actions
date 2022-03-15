@@ -14,7 +14,7 @@ OLD_NUM=$(cat $2.checkpoint)
 echo $OLD_NUM
 
 NEW_NUM=$(expr $OLD_NUM + 1)
-echo "$NEW_NUM\n" > $2.checkpoint
+echo "$NEW_NUM" > $2.checkpoint
 
 END_DATE=$(date -r $2.checkpoint)
 
