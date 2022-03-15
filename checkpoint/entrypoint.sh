@@ -1,21 +1,8 @@
 #!/bin/sh -l
 
-echo $1 > .github_token
-#/bin/gh auth login --with-token < .github_token
+cd $GITHUB_WORKSPACE
 
-cat .github_token
-
-mkdir /repo
-cd /repo
-
-
-
-echo "https://$1@github.com/$GITHUB_REPOSITORY.git"
-
-git clone https://$1@github.com/$GITHUB_REPOSITORY.git
-git checkout run-metadata
-
-FILE=/etc/resolv.conf
+FILE=$2.checkpoint
 if [ ! -f "$FILE" ]; then
     echo "1\n" > $2.checkpoint
 fi
@@ -23,7 +10,7 @@ fi
 START_DATE=$(date -r $2.checkpoint)
 
 NEW=$(expr $(cat $2.checkpoint) + 1)
-echo "$NEW\n" > $GITHUB_WORKSPACE/$2.checkpoint
+echo "$NEW\n" > $2.checkpoint
 
 END_DATE=$(date -r $2.checkpoint)
 
