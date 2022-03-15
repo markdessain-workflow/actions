@@ -1,0 +1,15 @@
+name: 'checkpoint'
+description: 'Greet someone and record the time'
+inputs:
+  name:
+    description: ''
+    required: true
+  token:
+    description: ''
+    required: true
+outputs:
+  time:
+    description: ''
+runs:
+  using: 'node17'
+  main: 'index.js'
