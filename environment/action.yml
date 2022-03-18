@@ -1,0 +1,17 @@
+name: 'environment'
+description: ''
+outputs:
+  name:
+    description: ''
+    value: ${{ steps.environment.outputs.name }}
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      id: environment
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "::set-output name=name::production"
+        else
+           echo "::set-output name=name::development"
+        fi
