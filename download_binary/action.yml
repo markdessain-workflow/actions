@@ -4,6 +4,10 @@ inputs:
   name:
     description: ''
     required: true
+  tag:
+    description: ''
+    required: false
+    default: 'latest'
   token:
     description: ''
     required: true
@@ -19,10 +23,18 @@ runs:
   steps:
     - shell: bash
       run: |
-        ABC=$(curl --silent \
-        -H "Accept: application/vnd.github.v3+json" \
-        -H "Authorization: token ${{ inputs.token }}" \
-        https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .)
+
+        if [ "${{ inputs.tag }}" = "latest" ]; then
+          ABC=$(curl --silent \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ inputs.token }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .)
+        else
+          ABC=$(curl --silent \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ inputs.token }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ inputs.tag }} | jq .)
+        fi
 
         ASSET_ID=$(echo $ABC | jq ".assets[] | {id, name}" | jq '. | select( .name == "'${{ inputs.name }}'")' | jq -r .id)
 
