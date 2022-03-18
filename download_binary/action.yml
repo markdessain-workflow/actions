@@ -36,6 +36,11 @@ runs:
           https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ inputs.tag }} | jq .)
         fi
 
+        if [ "$(echo $ABC | jq -r .message)" = "Not Found" ]; then
+          echo "Couldn't find tag"
+          exit 1
+        fi
+
         ASSET_ID=$(echo $ABC | jq ".assets[] | {id, name}" | jq '. | select( .name == "'${{ inputs.name }}'")' | jq -r .id)
 
         curl --silent \
