@@ -22,8 +22,6 @@ runs:
         -H "Authorization: token ${{ inputs.token }}" \
         https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID | jq .)
 
-        echo $ABC | jq .
-
         WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
         END_TIME=$(echo $ABC | jq -r .created_at)
 
@@ -37,6 +35,9 @@ runs:
         else
         START_TIME=$(echo $DEF | jq -r .workflow_runs[].created_at)
         fi
+
+        echo $START_TIME
+        echo $END_TIME
 
         echo "::set-output name=start_time::$START_TIME"
         echo "::set-output name=end_time::$END_TIME"
