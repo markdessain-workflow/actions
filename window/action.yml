@@ -7,12 +7,15 @@ inputs:
 outputs:
   start_time:
     description: ''
+    value: ${{ steps.window.outputs.start_time }}
   end_time:
     description: ''
+    value: ${{ steps.window.outputs.end_time }}
 runs:
   using: "composite"
   steps:
     - shell: bash
+      id: window
       run: |
         RUN_ID=${{ github.run_id }}
         RUN_NUMBER=${{ github.run_number }}
