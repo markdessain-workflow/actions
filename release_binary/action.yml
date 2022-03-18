@@ -45,8 +45,10 @@ runs:
       run: |
         cd ${{ inputs.directory }}
 
+        echo "Files $(ls)"
         for filename in $(ls)
         do
+          echo "Processing $filename"
           curl \
           -H "Content-Type: application/octet-stream" \
           -H "Authorization: token ${{ inputs.token }}" \
