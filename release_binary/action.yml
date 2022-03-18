@@ -7,10 +7,6 @@ inputs:
   directory:
     description: ''
     required: true
-  release_branch:
-    description: ''
-    required: false
-    default: 'refs/heads/main'
 outputs:
   binary:
     description: ''
@@ -18,7 +14,6 @@ runs:
   using: "composite"
   steps:
     - shell: bash
-      if: github.ref == ${{ inputs.release_branch }}
       id: set_version
       run: |
         ABC=$(curl --silent \
@@ -36,7 +31,6 @@ runs:
           echo "::set-output name=version::$NEW_VERSION"
 #
     - uses: actions/create-release@v1
-      if: github.ref == ${{ inputs.release_branch }}
       id: create_release
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -47,7 +41,6 @@ runs:
         tag_name: ${{ steps.set_version.outputs.version }}
 
     - shell: bash
-      if: github.ref == ${{ inputs.release_branch }}
       id: upload
       run: |
         cd ${{ inputs.directory }}
