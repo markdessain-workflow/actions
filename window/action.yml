@@ -22,8 +22,9 @@ runs:
         -H "Authorization: token ${{ inputs.token }}" \
         https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID | jq .)
 
-        WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
+        echo $ABC | jq .
 
+        WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
         END_TIME=$(echo $ABC | jq -r .created_at)
 
         DEF=$(curl --silent \
