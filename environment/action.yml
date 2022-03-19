@@ -4,6 +4,9 @@ outputs:
   name:
     description: ''
     value: ${{ steps.environment.outputs.name }}
+  prefix:
+    description: ''
+    value: ${{ steps.environment.outputs.prefix }}
 runs:
   using: "composite"
   steps:
@@ -12,6 +15,8 @@ runs:
       run: |
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           echo "::set-output name=name::production"
+          echo "::set-output name=prefix::PRODUCTION"
         else
-           echo "::set-output name=name::development"
+          echo "::set-output name=name::development"
+          echo "::set-output name=prefix::DEVELOPMENT"
         fi
