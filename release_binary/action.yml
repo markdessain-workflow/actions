@@ -1,0 +1,58 @@
+name: 'release_binary'
+description: ''
+inputs:
+  token:
+    description: ''
+    required: true
+  directory:
+    description: ''
+    required: true
+outputs:
+  binary:
+    description: ''
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      id: set_version
+      run: |
+        ABC=$(curl --silent \
+        -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token ${{ inputs.token }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .)
+
+          if [ "$(echo $ABC | jq -r .message)" = "Not Found" ]; then
+          NEW_VERSION="v1"
+          else
+          PREVIOUS_VERSION=$(echo $ABC | jq -r .name | cut -c2-)
+          NEW_VERSION="v"$((PREVIOUS_VERSION + 1))
+          fi
+
+          echo "::set-output name=version::$NEW_VERSION"
+#
+    - uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        draft: false
+        prerelease: false
+        release_name: ${{ steps.set_version.outputs.version }}
+        tag_name: ${{ steps.set_version.outputs.version }}
+
+    - shell: bash
+      id: upload
+      run: |
+        cd ${{ inputs.directory }}
+
+        echo "Files $(ls)"
+        for filename in $(ls)
+        do
+          echo "Processing $filename"
+          curl --silent \
+          -H "Content-Type: application/octet-stream" \
+          -H "Authorization: token ${{ inputs.token }}" \
+          --data-binary @"$filename" \
+          -L \
+          https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$filename
+        done

@@ -1,26 +1,55 @@
-# action.yml
 name: 'download_binary'
 description: ''
 inputs:
   name:
     description: ''
     required: true
+  tag:
+    description: ''
+    required: false
+    default: 'latest'
   token:
     description: ''
     required: true
   path:
     description: ''
     required: false
-    default: './dist'
+    default: '.'
 outputs:
   binary:
     description: ''
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - ${{ inputs.token }}
-    - ${{ inputs.name }}
-    - ${{ inputs.path }}
-  entrypoint: '/entrypoint.sh'
-  post-entrypoint: '/post-entrypoint.sh'
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+
+        if [ "${{ inputs.tag }}" = "latest" ]; then
+          ABC=$(curl --silent \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ inputs.token }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .)
+        else
+          ABC=$(curl --silent \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ inputs.token }}" \
+          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ inputs.tag }} | jq .)
+        fi
+
+        if [ "$(echo $ABC | jq -r .message)" = "Not Found" ]; then
+          echo "Couldn't find tag"
+          exit 1
+        fi
+
+        ASSET_ID=$(echo $ABC | jq ".assets[] | {id, name}" | jq '. | select( .name == "'${{ inputs.name }}'")' | jq -r .id)
+
+        curl --silent \
+        -H "Accept: application/octet-stream" \
+        -H "Authorization: token ${{ inputs.token }}" \
+        https://api.github.com/repos/${{ github.repository }}/releases/assets/$ASSET_ID \
+        -L \
+        --output ${{ inputs.name }}
+
+        chmod +x ${{ inputs.name }}
+
+        echo "::set-output name=binary::${{ inputs.name }}"
