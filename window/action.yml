@@ -57,7 +57,7 @@ runs:
           START_TIME=$(echo $DEF | jq -r .workflow_runs[].created_at)
         fi
 
-        if [ -z "${{ github.event.inputs.start_time }}}" ]; then
+        if [ -z "${{ github.event.inputs.start_time }}" ]; then
           echo "::set-output name=start_time::$START_TIME"
         else
           echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
