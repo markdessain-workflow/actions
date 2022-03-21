@@ -4,6 +4,12 @@ inputs:
   token:
     description: ''
     required: true
+  start_time:
+    description: ''
+    required: false
+  end_time:
+    description: ''
+    required: false
 outputs:
   start_time:
     description: ''
@@ -21,10 +27,21 @@ runs:
         RUN_NUMBER=${{ github.run_number }}
 
         if [[ $RUN_ID -eq 1 ]]; then
-        echo "Running in a development environment locally with https://github.com/nektos/act"
-        echo "::set-output name=start_time::2020-01-01T01:00:00Z"
-        echo "::set-output name=end_time::2020-01-01T02:00:00Z"
-        exit 0
+          echo "Running in a development environment locally with https://github.com/nektos/act"
+
+          if [ -z "${{ inputs.start_time }}" ]; then
+            echo "inputs.start_time is missing"
+            exit 1
+          fi
+
+          if [ -z "${{ inputs.end_time }}" ]; then
+            echo "inputs.end_time is missing"
+            exit 1
+          fi
+
+          echo "::set-output name=start_time::${{ inputs.start_time }}"
+          echo "::set-output name=end_time::${{ inputs.end_time }}"
+          exit 0
         fi
 
         ABC=$(curl --silent \
@@ -41,10 +58,19 @@ runs:
         "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$WORKFLOW_ID/runs?status=success&per_page=1&created=<$END_TIME&branch=${{ github.ref_name }}" | jq .)
 
         if [[ $(echo $DEF | jq -r .total_count) -eq 0 ]]; then
-        START_TIME=$END_TIME
+          START_TIME=$END_TIME
         else
-        START_TIME=$(echo $DEF | jq -r .workflow_runs[].created_at)
+          START_TIME=$(echo $DEF | jq -r .workflow_runs[].created_at)
         fi
 
-        echo "::set-output name=start_time::$START_TIME"
-        echo "::set-output name=end_time::$END_TIME"
+        if [ -z "${{ inputs.start_time }}" ]; then
+          echo "::set-output name=start_time::$START_TIME"
+        else
+          echo "::set-output name=start_time::${{ inputs.start_time }}"
+        fi
+
+        if [ -z "${{ inputs.end_time }}" ]; then
+          echo "::set-output name=end_time::$END_TIME"
+        else
+          echo "::set-output name=end_time::${{ inputs.end_time }}"
+        fi
