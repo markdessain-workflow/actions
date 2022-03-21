@@ -23,22 +23,19 @@ runs:
     - shell: bash
       id: window
       run: |
-        echo "Test"
-        echo ${{ github.event.inputs.start_time }}
-
         RUN_ID=${{ github.run_id }}
         RUN_NUMBER=${{ github.run_number }}
 
         if [[ $RUN_ID -eq 1 ]]; then
           echo "Running in a development environment locally with https://github.com/nektos/act"
 
-          if [ -z "${{ inputs.start_time }}" ]; then
-            echo "inputs.start_time is missing"
+          if [ -z "${{ github.event.inputs.start_time }}" ]; then
+            echo "github.event.inputs.start_time is missing"
             exit 1
           fi
 
-          if [ -z "${{ inputs.end_time }}" ]; then
-            echo "inputs.end_time is missing"
+          if [ -z "${{ github.event.inputs.end_time }}" ]; then
+            echo "github.event.inputs.end_time is missing"
             exit 1
           fi
 
@@ -66,14 +63,14 @@ runs:
           START_TIME=$(echo $DEF | jq -r .workflow_runs[].created_at)
         fi
 
-        if [ -z "${{ inputs.start_time }}" ]; then
+        if [ -z "${{ github.event.inputs.start_time }}}" ]; then
           echo "::set-output name=start_time::$START_TIME"
         else
-          echo "::set-output name=start_time::${{ inputs.start_time }}"
+          echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
         fi
 
-        if [ -z "${{ inputs.end_time }}" ]; then
+        if [ -z "${{ github.event.inputs.end_time }}" ]; then
           echo "::set-output name=end_time::$END_TIME"
         else
-          echo "::set-output name=end_time::${{ inputs.end_time }}"
+          echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
         fi
