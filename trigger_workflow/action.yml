@@ -32,4 +32,6 @@ runs:
           https://api.github.com/repos/${{ github.repository }}/actions/workflows/$WORKFLOW_ID/dispatches \
           -d '{"ref":"${{ github.ref }}"}'
 
+          echo "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$WORKFLOW_ID/dispatches"
+
         fi
