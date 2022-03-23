@@ -26,6 +26,8 @@ runs:
 
           WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
 
+          ecco $WORKFLOW_ID
+
           curl -X POST \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: token ${{ inputs.token }}" \
