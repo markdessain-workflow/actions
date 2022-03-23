@@ -24,32 +24,45 @@ runs:
     - shell: bash
       run: |
 
-        if [ "${{ inputs.tag }}" = "latest" ]; then
-          ABC=$(curl --silent \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: token ${{ inputs.token }}" \
-          https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .)
+        RUN_ID=${{ github.run_id }}
+
+        if [[ $RUN_ID -eq 1 ]]; then
+          echo "Running in a development environment locally with https://github.com/nektos/act"
+
+          curl --silent \
+          host.docker.internal:8000/${{ inputs.name }} \
+          -L \
+          --output ${{ inputs.name }}
+
         else
-          ABC=$(curl --silent \
-          -H "Accept: application/vnd.github.v3+json" \
+
+          if [ "${{ inputs.tag }}" = "latest" ]; then
+            ABC=$(curl --silent \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ inputs.token }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .)
+          else
+            ABC=$(curl --silent \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ inputs.token }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ inputs.tag }} | jq .)
+          fi
+
+          if [ "$(echo $ABC | jq -r .message)" = "Not Found" ]; then
+            echo "Couldn't find tag"
+            exit 1
+          fi
+
+          ASSET_ID=$(echo $ABC | jq ".assets[] | {id, name}" | jq '. | select( .name == "'${{ inputs.name }}'")' | jq -r .id)
+
+          curl --silent \
+          -H "Accept: application/octet-stream" \
           -H "Authorization: token ${{ inputs.token }}" \
-          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ inputs.tag }} | jq .)
+          https://api.github.com/repos/${{ github.repository }}/releases/assets/$ASSET_ID \
+          -L \
+          --output ${{ inputs.name }}
+
         fi
-
-        if [ "$(echo $ABC | jq -r .message)" = "Not Found" ]; then
-          echo "Couldn't find tag"
-          exit 1
-        fi
-
-        ASSET_ID=$(echo $ABC | jq ".assets[] | {id, name}" | jq '. | select( .name == "'${{ inputs.name }}'")' | jq -r .id)
-
-        curl --silent \
-        -H "Accept: application/octet-stream" \
-        -H "Authorization: token ${{ inputs.token }}" \
-        https://api.github.com/repos/${{ github.repository }}/releases/assets/$ASSET_ID \
-        -L \
-        --output ${{ inputs.name }}
 
         chmod +x ${{ inputs.name }}
-
         echo "::set-output name=binary::${{ inputs.name }}"

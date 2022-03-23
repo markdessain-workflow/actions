@@ -20,6 +20,24 @@ runs:
         RUN_ID=${{ github.run_id }}
         RUN_NUMBER=${{ github.run_number }}
 
+        if [[ $RUN_ID -eq 1 ]]; then
+          echo "Running in a development environment locally with https://github.com/nektos/act"
+
+          if [ -z "${{ github.event.inputs.start_time }}" ]; then
+            echo "github.event.inputs.start_time is missing"
+            exit 1
+          fi
+
+          if [ -z "${{ github.event.inputs.end_time }}" ]; then
+            echo "github.event.inputs.end_time is missing"
+            exit 1
+          fi
+
+          echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
+          echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
+          exit 0
+        fi
+
         ABC=$(curl --silent \
         -H "Accept: application/vnd.github.v3+json" \
         -H "Authorization: token ${{ inputs.token }}" \
@@ -34,10 +52,19 @@ runs:
         "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$WORKFLOW_ID/runs?status=success&per_page=1&created=<$END_TIME&branch=${{ github.ref_name }}" | jq .)
 
         if [[ $(echo $DEF | jq -r .total_count) -eq 0 ]]; then
-        START_TIME=$END_TIME
+          START_TIME=$END_TIME
         else
-        START_TIME=$(echo $DEF | jq -r .workflow_runs[].created_at)
+          START_TIME=$(echo $DEF | jq -r .workflow_runs[].created_at)
         fi
 
-        echo "::set-output name=start_time::$START_TIME"
-        echo "::set-output name=end_time::$END_TIME"
+        if [ -z "${{ github.event.inputs.start_time }}" ]; then
+          echo "::set-output name=start_time::$START_TIME"
+        else
+          echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
+        fi
+
+        if [ -z "${{ github.event.inputs.end_time }}" ]; then
+          echo "::set-output name=end_time::$END_TIME"
+        else
+          echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
+        fi
