@@ -74,9 +74,19 @@ runs:
         -H "Authorization: token ${{ inputs.github_token }}" \
         https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID | jq .)
 
-        echo $ABC
-
         WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
+
+        # Check we can authenticate into the database
+        DB_CONNECTION=$(curl --location --request GET \
+        --header 'Authorization: Bearer ${{ inputs.database_token }}' \
+        --header 'Accept-Profile: ${{ inputs.database_schema }}' ${{ inputs.database }} | jq .)
+
+        COUNT=$(echo $DB_CONNECTION | jq '. | length')
+        if [[ $COUNT -eq 1 ]]; then
+          echo "Database Auth failed"
+          echo $DB_CONNECTION
+          exit 1
+        fi
 
         # Find if this is the first time the run has happened
         echo "Check if workflow run before"
@@ -85,7 +95,6 @@ runs:
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
         --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/runs?and=(id.eq.$RUN_ID,workflow_id.eq.$WORKFLOW_ID)&limit=1" | jq .)
 
-        echo $DEF
         TYPE=$(echo $DEF | jq -r '. | type')
         COUNT=$(echo $DEF | jq '. | length')
 
@@ -94,7 +103,6 @@ runs:
           exit 1
         fi
 
-        # TODO - COUNT IS BROKEN FOR OBJECT!
         if [[ $COUNT -eq 1 ]]; then
           echo "Has been run before so we use the previous values"
 
