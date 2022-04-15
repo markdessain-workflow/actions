@@ -86,7 +86,7 @@ runs:
         --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/runs?and=(id.eq.$RUN_ID,workflow_id.eq.$WORKFLOW_ID)&limit=1" | jq .)
 
         echo $DEF
-        TYPE=$(echo $DEF | jq '. | type')
+        TYPE=$(echo $DEF | jq -r '. | type')
         COUNT=$(echo $DEF | jq '. | length')
 
         if [ "$TYPE" = "object" ]; then
@@ -115,7 +115,7 @@ runs:
         --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1" | jq .)
 
         echo $CHECKPOINT
-        TYPE=$(echo $CHECKPOINT | jq '. | type')
+        TYPE=$(echo $CHECKPOINT | jq -r '. | type')
         COUNT=$(echo $CHECKPOINT | jq '. | length')
 
         if [ "$TYPE" = "object" ]; then
