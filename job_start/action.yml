@@ -79,12 +79,11 @@ runs:
 
         DEF=$(curl --silent --location --request GET \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
-        --header 'Accept-Profile: pipeline' "${{ inputs.database }}/runs?and=(id.eq.$RUN_ID,workflow_id.eq.$WORKFLOW_ID)&limit=1" | jq -r '.[0]')
+        --header 'Accept-Profile: pipeline' "${{ inputs.database }}/runs?and=(id.eq.$RUN_ID,workflow_id.eq.$WORKFLOW_ID)&limit=1" | jq .)
 
-        echo $DEF 
-        if [ "$DEF" = "null" ]; then
-          A=1
-        else
+        echo $DEF
+        COUNT=$(echo $DEF | jq '. | length')
+        if [[ $COUNT -eq 1 ]]; then
           echo "Has been run before so we use the previous values"
 
           START_TIME=$(echo $DEF | jq -r .start_time)
@@ -101,11 +100,11 @@ runs:
         # At this stage we need a checkpoint for our starting position
         CHECKPOINT=$(curl --location --request GET \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
-        --header 'Accept-Profile: pipeline' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1" | jq -r '.[0]')
+        --header 'Accept-Profile: pipeline' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1" | jq .)
 
         echo $CHECKPOINT
-        
-        if [ "$CHECKPOINT" = "null" ]; then
+        COUNT=$(echo $CHECKPOINT | jq '. | length')
+        if [[ $COUNT -eq 0 ]]; then
           # ERROR
           echo "Unable to find a start and end time from inputs and no checkpoint exists"
           exit 1
