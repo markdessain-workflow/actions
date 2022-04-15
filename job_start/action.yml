@@ -10,6 +10,10 @@ inputs:
   database_token:
     description: ''
     required: true
+  database_schema:
+    description: ''
+    required: false
+    default: 'pipeline'
 outputs:
   start_time:
     description: ''
@@ -79,10 +83,18 @@ runs:
 
         DEF=$(curl --silent --location --request GET \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
-        --header 'Accept-Profile: pipeline' "${{ inputs.database }}/runs?and=(id.eq.$RUN_ID,workflow_id.eq.$WORKFLOW_ID)&limit=1" | jq .)
+        --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/runs?and=(id.eq.$RUN_ID,workflow_id.eq.$WORKFLOW_ID)&limit=1" | jq .)
 
         echo $DEF
+        TYPE=$(echo $DEF | jq '. | type')
         COUNT=$(echo $DEF | jq '. | length')
+
+        if [ "$TYPE" = "object" ]; then
+          echo "Expected Array"
+          exit 1
+        fi
+
+        # TODO - COUNT IS BROKEN FOR OBJECT!
         if [[ $COUNT -eq 1 ]]; then
           echo "Has been run before so we use the previous values"
 
@@ -100,10 +112,17 @@ runs:
         # At this stage we need a checkpoint for our starting position
         CHECKPOINT=$(curl --location --request GET \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
-        --header 'Accept-Profile: pipeline' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1" | jq .)
+        --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1" | jq .)
 
         echo $CHECKPOINT
+        TYPE=$(echo $CHECKPOINT | jq '. | type')
         COUNT=$(echo $CHECKPOINT | jq '. | length')
+
+        if [ "$TYPE" = "object" ]; then
+          echo "Expected Array"
+          exit 1
+        fi
+
         if [[ $COUNT -eq 0 ]]; then
           # ERROR
           echo "Unable to find a start and end time from inputs and no checkpoint exists"
@@ -118,3 +137,5 @@ runs:
 
         echo "::set-output name=start_time::$START_TIME"
         echo "::set-output name=end_time::$END_TIME"
+
+
