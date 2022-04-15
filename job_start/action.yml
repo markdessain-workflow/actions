@@ -46,6 +46,7 @@ runs:
           exit 0
         fi
 
+        echo "Check for both start and end inputs"
         # Always use the provided values if they are both set
         if [ -z "${{ github.event.inputs }}" ]; then
           if [ -z "${{ github.event.inputs.start_time }}" ]; then
@@ -62,6 +63,7 @@ runs:
 
         # Othewise we need to find the start and end times based on previous runs
 
+        echo "Get Gihub workflow details"
         # Get the Github workflows
         ABC=$(curl --silent \
         -H "Accept: application/vnd.github.v3+json" \
@@ -71,6 +73,7 @@ runs:
         WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
 
         # Find if this is the first time the run has happened
+        echo "Check if workflow run before"
 
         DEF=$(curl --silent --location --request GET \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
@@ -89,6 +92,8 @@ runs:
 
           exit 0
         fi
+
+        echo "Check if checkpoint exists"
 
         # At this stage we need a checkpoint for our starting position
         CHECKPOINT=$(curl --location --request GET \
