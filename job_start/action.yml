@@ -154,9 +154,13 @@ runs:
         START_TIME=$(echo $CHECKPOINT | jq -r .[0].value)
         END_TIME=$(echo $ABC | jq -r .created_at)
 
+        echo "Times"
+        echo "$START_TIME"
+        echo "$END_TIME"
+
         echo "Inserting job metadata"
 
-        curl "${{ inputs.database }}/runs" \
+        R=$(curl "${{ inputs.database }}/runs" \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
         --header 'Accept-Profile: ${{ inputs.database_schema }}'  \
         -X POST \
@@ -166,7 +170,11 @@ runs:
           [
             { "id": $RUN_ID, "workflow_id": $WORKFLOW_ID, "start_time": $START_TIME, "end_time": $END_TIME}
           ]
-        EOF
+        EOF | .jq .)
+
+        echo $R
+
+        echo "Setting outputs"
 
         echo "::set-output name=start_time::$START_TIME"
         echo "::set-output name=end_time::$END_TIME"
