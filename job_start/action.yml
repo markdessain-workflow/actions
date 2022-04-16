@@ -51,22 +51,24 @@ runs:
         fi
 
         echo "Check for both start and end inputs"
-        echo "${{ github.event.inputs }}"
         # Always use the provided values if they are both set
-        #if [ -z "${{ github.event.inputs }}" ]; then
-        echo "${{ github.event.inputs.start_time }}"
-        if [ -z "${{ github.event.inputs.start_time }}" ]; then
-          echo "${{ github.event.inputs.end_time }}"
-          if [ -z "${{ github.event.inputs.end_time }}" ]; then
+        if [ -z "${{ github.event.inputs }}" ]; then
+          A=1
+        else
+          if [ -z "${{ github.event.inputs.start_time }}" ]; then
             A=1
           else
-            echo "Using input values"
-            echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
-            echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
-            exit 0
-          fi
+            if [ -z "${{ github.event.inputs.end_time }}" ]; then
+              A=1
+            else
+              echo "Using input values"
+              echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
+              echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
+              exit 0
+            fi
+          fi     
         fi
-        #fi
+          
 
         # Othewise we need to find the start and end times based on previous runs
 
