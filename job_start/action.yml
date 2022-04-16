@@ -159,7 +159,7 @@ runs:
         curl "${{ inputs.database }}/runs" \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
         --header 'Accept-Profile: ${{ inputs.database_schema }}'  \
-        -X POST 
+        -X POST \
         -H "Content-Type: application/json" \
         -H "Prefer: resolution=merge-duplicates" \
         -d @- << EOF
