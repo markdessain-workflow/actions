@@ -51,9 +51,12 @@ runs:
         fi
 
         echo "Check for both start and end inputs"
+        echo "${{ github.event.inputs }}"
         # Always use the provided values if they are both set
         if [ -z "${{ github.event.inputs }}" ]; then
+          echo "${{ github.event.inputs.start_time }}"
           if [ -z "${{ github.event.inputs.start_time }}" ]; then
+            echo "${{ github.event.inputs.end_time }}"
             if [ -z "${{ github.event.inputs.end_time }}" ]; then
               A=1
             else
