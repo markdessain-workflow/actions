@@ -1,6 +1,9 @@
 name: 'job_end'
 description: ''
 inputs:
+  github_token:
+    description: ''
+    required: true
   database:
     description: ''
     required: false
