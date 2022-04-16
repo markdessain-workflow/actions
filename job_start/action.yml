@@ -132,7 +132,7 @@ runs:
         # At this stage we need a checkpoint for our starting position
         CHECKPOINT=$(curl --location --request GET \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
-        --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1" | jq .)
+        --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1&order=created_at.desc" | jq .)
 
         TYPE=$(echo $CHECKPOINT | jq -r '. | type')
         COUNT=$(echo $CHECKPOINT | jq '. | length')
