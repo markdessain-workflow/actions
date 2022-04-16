@@ -50,28 +50,9 @@ runs:
           exit 0
         fi
 
-        echo "Check for both start and end inputs"
-        # Always use the provided values if they are both set
-        if [ -z "${{ github.event.inputs }}" ]; then
-          A=1
-        else
-          if [ -z "${{ github.event.inputs.start_time }}" ]; then
-            A=1
-          else
-            if [ -z "${{ github.event.inputs.end_time }}" ]; then
-              A=1
-            else
-              echo "Using input values"
-              echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
-              echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
-              exit 0
-            fi
-          fi     
-        fi
-          
 
-        # Othewise we need to find the start and end times based on previous runs
-
+        
+        
         echo "Get Gihub workflow details"
         # Get the Github workflows
         ABC=$(curl --silent \
@@ -93,6 +74,44 @@ runs:
           exit 1
         fi
 
+
+
+        
+        echo "Check for both start and end inputs"
+        # Always use the provided values if they are both set
+        if [ -z "${{ github.event.inputs }}" ]; then
+          A=1
+        else
+          if [ -z "${{ github.event.inputs.start_time }}" ]; then
+            A=1
+          else
+            if [ -z "${{ github.event.inputs.end_time }}" ]; then
+              A=1
+            else
+              echo "Using input values"
+
+              curl "${{ inputs.database }}/runs" \
+              --header 'Authorization: Bearer ${{ inputs.database_token }}' \
+              --header 'Accept-Profile: ${{ inputs.database_schema }}'  \
+              -X POST 
+              -H "Content-Type: application/json" \
+              -H "Prefer: resolution=merge-duplicates" \
+              -d @- << EOF
+                [
+                  { "id": $RUN_ID, "workflow_id": $WORKFLOW_ID, "start_time": ${{ github.event.inputs.start_time }}, "end_time": ${{ github.event.inputs.end_time }} }
+                ]
+              EOF
+              
+              echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
+              echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
+              exit 0
+            fi
+          fi     
+        fi
+          
+
+        
+        
         # Find if this is the first time the run has happened
         echo "Check if workflow run before"
 
