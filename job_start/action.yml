@@ -153,6 +153,7 @@ runs:
         # The end will be this workflow runs created_at
         START_TIME=$(echo $CHECKPOINT | jq -r .[0].value)
         END_TIME=$(echo $ABC | jq -r .created_at)
+        END_TIME=${END_TIME/Z/+00:00}  
 
         echo "Times"
         echo "$START_TIME"
