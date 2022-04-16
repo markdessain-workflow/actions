@@ -1,4 +1,4 @@
-name: 'window'
+name: 'job_start'
 description: ''
 inputs:
   github_token:

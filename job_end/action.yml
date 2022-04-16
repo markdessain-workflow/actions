@@ -1,0 +1,71 @@
+name: 'job_end'
+description: ''
+inputs:
+  database:
+    description: ''
+    required: false
+  database_token:
+    description: ''
+    required: true
+  database_schema:
+    description: ''
+    required: false
+    default: 'pipeline'
+  time:
+    description: ''
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+
+        # A local testing run using act will also just use the input values
+        RUN_ID=${{ github.run_id }}
+        RUN_NUMBER=${{ github.run_number }}
+
+        if [[ $RUN_ID -eq 1 ]]; then
+          exit 0
+        fi
+
+
+        
+        echo "Get Gihub workflow details"
+        # Get the Github workflows
+        ABC=$(curl --silent \
+        -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token ${{ inputs.github_token }}" \
+        https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID | jq .)
+
+        WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
+
+
+
+        # Check we can authenticate into the database
+        DB_CONNECTION=$(curl --location --request GET \
+        --header 'Authorization: Bearer ${{ inputs.database_token }}' \
+        --header 'Accept-Profile: ${{ inputs.database_schema }}' ${{ inputs.database }} | jq .)
+
+        COUNT=$(echo $DB_CONNECTION | jq '. | length')
+        if [[ $COUNT -eq 1 ]]; then
+          echo "Database Auth failed"
+          echo $DB_CONNECTION
+          exit 1
+        fi
+
+
+
+
+        echo "Inserting checkpoint"
+
+        curl "${{ inputs.database }}/checkpoints" \
+        --header 'Authorization: Bearer ${{ inputs.database_token }}' \
+        --header 'Content-Profile: ${{ inputs.database_schema }}'  \
+        -X POST \
+        -H "Content-Type: application/json" \
+        -d @- << EOF
+          [
+            { "key": "workflow_$WORKFLOW_ID", "value": "${{ inputs.time }}"}
+          ]
+        EOF
+
