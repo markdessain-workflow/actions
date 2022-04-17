@@ -32,6 +32,31 @@ runs:
         fi
 
 
+        echo "Check with mode to use"
+        if [ -z "${{ github.event.inputs }}" ]; then
+          MODE=regular
+        else
+          if [ -z "${{ github.event.inputs.start_time }}" ]; then
+            if [ -z "${{ github.event.inputs.end_time }}" ]; then
+              MODE=regular
+            else
+              echo "Now allowed to set the end without a start"
+              exit 1
+            fi
+          else
+            if [ -z "${{ github.event.inputs.end_time }}" ]; then
+              MODE=inital
+            else
+              MODE=adhoc
+            fi
+          fi     
+        fi
+
+
+        if [ "$MODE" = "adhoc" ]; then
+          echo "adhoc"
+          exit 0
+        fi
         
         echo "Get Gihub workflow details"
         # Get the Github workflows
@@ -41,7 +66,6 @@ runs:
         https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID | jq .)
 
         WORKFLOW_ID=$(echo $ABC | jq -r .workflow_id)
-
 
 
         # Check we can authenticate into the database
@@ -58,17 +82,16 @@ runs:
 
 
 
+        
+        echo "Update Done"
 
-        echo "Inserting checkpoint"
+        # set completed field as done#
+        # requires udate database persmisosns
 
-        curl "${{ inputs.database }}/checkpoints" \
+        curl "${{ inputs.database }}/runs?id=eq.$RUN_ID" \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
         --header 'Content-Profile: ${{ inputs.database_schema }}'  \
-        -X POST \
+        -X PATCH \
         -H "Content-Type: application/json" \
-        -d @- << EOF
-          [
-            { "key": "workflow_$WORKFLOW_ID", "value": "${{ inputs.time }}"}
-          ]
-        EOF
+        -d '{ "completed": true }'
 
