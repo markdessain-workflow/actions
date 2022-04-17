@@ -153,7 +153,7 @@ runs:
 
           PREVIOUS=$(curl --silent --location --request GET \
           --header 'Authorization: Bearer ${{ inputs.database_token }}' \
-          --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/runs?and=(workflow_id.eq.$WORKFLOW_ID,completed.eq.true)&limit=1&order=end_time.desc" | jq .)
+          --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/runs?and=(workflow_id.eq.$WORKFLOW_ID,checkpoint.eq.true)&limit=1&order=end_time.desc" | jq .)
 
           TYPE=$(echo $PREVIOUS | jq -r '. | type')
           COUNT=$(echo $PREVIOUS | jq '. | length')

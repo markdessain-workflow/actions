@@ -81,17 +81,13 @@ runs:
         fi
 
 
-
         
         echo "Update Done"
-
-        # set completed field as done#
-        # requires udate database persmisosns
 
         curl "${{ inputs.database }}/runs?id=eq.$RUN_ID" \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
         --header 'Content-Profile: ${{ inputs.database_schema }}'  \
         -X PATCH \
         -H "Content-Type: application/json" \
-        -d '{ "completed": true }'
+        -d '{ "checkpoint": true }'
 
