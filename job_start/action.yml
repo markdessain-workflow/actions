@@ -163,7 +163,7 @@ runs:
             exit 1
           fi
           
-          if [[ $COUNT -eq 1 ]]; then
+          if [[ $COUNT -eq 0 ]]; then
             echo "No previous successful runs"
             exit 1
           fi
