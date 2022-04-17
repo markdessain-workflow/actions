@@ -162,6 +162,11 @@ runs:
             echo "Expected Array"
             exit 1
           fi
+          
+          if [[ $COUNT -eq 1 ]]; then
+            echo "No previous successful runs"
+            exit 1
+          fi
 
           START_TIME=$(echo $PREVIOUS | jq -r .[0].end_time)
           END_TIME=$(echo $ABC | jq -r .created_at)
