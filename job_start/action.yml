@@ -28,7 +28,7 @@ runs:
       id: window
       run: |
 
-        # A local testing run using act will also just use the input values
+        # A local testing run using act will also just use the input values and bypass all other logic
         RUN_ID=${{ github.run_id }}
         RUN_NUMBER=${{ github.run_number }}
 
@@ -52,31 +52,33 @@ runs:
 
 
 
-        
-        echo "Check for both start and end inputs"
-        # Always use the provided values if they are both set
+        echo "Check with mode to use"
         if [ -z "${{ github.event.inputs }}" ]; then
-          A=1
+          MODE=regular
         else
           if [ -z "${{ github.event.inputs.start_time }}" ]; then
-            A=1
+            if [ -z "${{ github.event.inputs.end_time }}" ]; then
+              MODE=regular
+            else
+              echo "Now allowed to set the end without a start"
+              exit 1
+            fi
           else
             if [ -z "${{ github.event.inputs.end_time }}" ]; then
-              A=1
+              MODE=inital
             else
-              echo "Using input values"
+              MODE=adhoc
               
-              echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
-              echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
-              exit 0
+              # echo "::set-output name=start_time::${{ github.event.inputs.start_time }}"
+              # echo "::set-output name=end_time::${{ github.event.inputs.end_time }}"
+              # exit 0
             fi
           fi     
         fi
+
+
           
 
-
-
-        
         echo "Get Gihub workflow details"
         # Get the Github workflows
         ABC=$(curl --silent \
@@ -100,6 +102,15 @@ runs:
 
 
 
+
+        # At this stage we know
+        # - run_id
+        # - workflow_id
+        # - mode
+        # - valid database connection
+
+
+
         # Find if this is the first time the run has happened
         echo "Check if workflow run before"
 
@@ -116,7 +127,7 @@ runs:
         fi
 
         if [[ $COUNT -eq 1 ]]; then
-          echo "Has been run before so we use the previous values"
+          echo "rerun"
 
           START_TIME=$(echo $DEF | jq -r .[0].start_time)
           END_TIME=$(echo $DEF | jq -r .[0].end_time)
@@ -127,42 +138,42 @@ runs:
           exit 0
         fi
 
-        echo "Check if checkpoint exists"
-
-        # At this stage we need a checkpoint for our starting position
-        CHECKPOINT=$(curl --location --request GET \
-        --header 'Authorization: Bearer ${{ inputs.database_token }}' \
-        --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/checkpoints?and=(key.eq.workflow_$WORKFLOW_ID)&limit=1&order=created_at.desc" | jq .)
-
-        TYPE=$(echo $CHECKPOINT | jq -r '. | type')
-        COUNT=$(echo $CHECKPOINT | jq '. | length')
-
-        if [ "$TYPE" = "object" ]; then
-          echo "Expected Array"
-          exit 1
+        if [ "$MODE" = "adhoc" ]; then
+          echo "adhoc"
+          
+          START_TIME="${{ github.event.inputs.start_time }"
+          END_TIME="${{ github.event.inputs.end_time }"
         fi
 
-        if [[ $COUNT -eq 0 ]]; then
-          # ERROR
-          echo "Unable to find a start and end time from inputs and no checkpoint exists"
-          exit 1
+        if [ "$MODE" = "inital" ]; then
+          echo "init"
+          
+          START_TIME="${{ github.event.inputs.start_time }"
+          END_TIME=$(echo $ABC | jq -r .created_at)
         fi
 
-        echo "First Time Running so we are using the checkpoint"
+        if [ "$MODE" = "regular" ]; then
+          echo "regular"
 
-        # The end will be this workflow runs created_at
-        START_TIME=$(echo $CHECKPOINT | jq -r .[0].value)
-        END_TIME=$(echo $ABC | jq -r .created_at)
-        END_TIME=${END_TIME/Z/+00:00}  
+          PREVIOUS=$(curl --silent --location --request GET \
+          --header 'Authorization: Bearer ${{ inputs.database_token }}' \
+          --header 'Accept-Profile: ${{ inputs.database_schema }}' "${{ inputs.database }}/runs?and=(workflow_id.eq.$WORKFLOW_ID,completed.eq.true)&limit=1&order=id.desc" | jq .)
 
-        echo "Times"
-        echo "$START_TIME"
-        echo "$END_TIME"
+          TYPE=$(echo $PREVIOUS | jq -r '. | type')
+          COUNT=$(echo $PREVIOUS | jq '. | length')
+
+          if [ "$TYPE" = "object" ]; then
+            echo "Expected Array"
+            exit 1
+          fi
+
+          START_TIME=$(echo $PREVIOUS | jq -r .[0].end_time)
+          END_TIME=$(echo $ABC | jq -r .created_at)
+        fi
+
 
         echo "Inserting job metadata"
 
-        echo "{ \"id\": $RUN_ID, \"workflow_id\": $WORKFLOW_ID, \"start_time\": $START_TIME, \"end_time\": $END_TIME}"
-        
         curl "${{ inputs.database }}/runs" \
         --header 'Authorization: Bearer ${{ inputs.database_token }}' \
         --header 'Content-Profile: ${{ inputs.database_schema }}'  \
@@ -178,5 +189,6 @@ runs:
 
         echo "::set-output name=start_time::$START_TIME"
         echo "::set-output name=end_time::$END_TIME"
+
 
 
