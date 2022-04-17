@@ -25,6 +25,8 @@ runs:
       run: |
 
         RUN_ID=${{ github.run_id }}
+        
+        mkdir -p ${{ inputs.path }}
 
         if [[ $RUN_ID -eq 1 ]]; then
           echo "Running in a development environment locally with https://github.com/nektos/act"
@@ -32,7 +34,7 @@ runs:
           curl --silent \
           host.docker.internal:8000/${{ inputs.name }} \
           -L \
-          --output ${{ inputs.name }}
+          --output ${{ inputs.path }}/${{ inputs.name }}
 
         else
 
@@ -60,9 +62,9 @@ runs:
           -H "Authorization: token ${{ inputs.token }}" \
           https://api.github.com/repos/${{ github.repository }}/releases/assets/$ASSET_ID \
           -L \
-          --output ${{ inputs.name }}
+          --output ${{ inputs.path }}/${{ inputs.name }}
 
         fi
 
-        chmod +x ${{ inputs.name }}
-        echo "::set-output name=binary::${{ inputs.name }}"
+        chmod +x ${{ inputs.path }}/${{ inputs.name }}
+        echo "::set-output name=binary::${{ inputs.path }}/${{ inputs.name }}"

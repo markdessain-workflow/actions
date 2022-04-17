@@ -4,6 +4,10 @@ inputs:
   token:
     description: ''
     required: true
+  inputs:
+    description: ''
+    required: false
+    default: '{}'
 outputs:
   binary:
     description: ''
@@ -30,6 +34,6 @@ runs:
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: token ${{ inputs.token }}" \
           https://api.github.com/repos/${{ github.repository }}/actions/workflows/$WORKFLOW_ID/dispatches \
-          -d '{"ref":"${{ github.ref_name }}"}'
+          -d '{"ref":"${{ github.ref_name }}", "inputs":${{ inputs.inputs }}}'
 
         fi
