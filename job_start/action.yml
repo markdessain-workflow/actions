@@ -138,14 +138,18 @@ runs:
           echo "adhoc"
           
           START_TIME="${{ github.event.inputs.start_time }}"
+          START_TIME=${START_TIME/Z/+00:00}
           END_TIME="${{ github.event.inputs.end_time }}"
+          END_TIME=${END_TIME/Z/+00:00}
         fi
 
         if [ "$MODE" = "inital" ]; then
           echo "init"
           
           START_TIME="${{ github.event.inputs.start_time }}"
+          START_TIME=${START_TIME/Z/+00:00}
           END_TIME=$(echo $ABC | jq -r .created_at)
+          END_TIME=${END_TIME/Z/+00:00}
         fi
 
         if [ "$MODE" = "regular" ]; then
